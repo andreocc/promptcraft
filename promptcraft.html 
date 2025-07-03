@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refinador de Prompts AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .section-title i {
+            font-size: 1.6rem;
+            color: var(--secondary);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: var(--transition);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn i {
+            font-size: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #5a6fd8 0%, #684196 100%);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: var(--gray);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-3px);
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .option-card {
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            background: white;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary);
+            background: #f5f7ff;
+            transform: translateY(-5px);
+        }
+
+        .option-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .option-card h4 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--border-radius);
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .examples {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .example-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .example-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .example-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .example-label {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .example-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 30px 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .counter {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+            background: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .examples {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-robot"></i> Refinador de Prompts AI</h1>
+            <p>Transforme prompts básicos em instruções precisas e eficazes com nossa ferramenta inteligente</p>
+            <div class="counter">Prompts refinados hoje: <span id="counter">0</span></div>
+        </header>
+
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-sliders-h"></i>
+                Tipo de Refinamento
+            </div>
+            <div class="options-grid">
+                <div class="option-card active" data-type="clarity">
+                    <h4><i class="fas fa-bullseye"></i> Clareza</h4>
+                    <p>Torna o prompt mais específico e claro</p>
+                </div>
+                <div class="option-card" data-type="structure">
+                    <h4><i class="fas fa-layer-group"></i> Estrutura</h4>
+                    <p>Organiza e estrutura melhor o prompt</p>
+                </div>
+                <div class="option-card" data-type="context">
+                    <h4><i class="fas fa-comment-alt"></i> Contexto</h4>
+                    <p>Adiciona contexto e detalhes relevantes</p>
+                </div>
+                <div class="option-card" data-type="professional">
+                    <h4><i class="fas fa-briefcase"></i> Profissional</h4>
+                    <p>Adapta para uso corporativo</p>
+                </div>
+                <div class="option-card" data-type="creative">
+                    <h4><i class="fas fa-palette"></i> Criativo</h4>
+                    <p>Adiciona elementos criativos e originais</p>
+                </div>
+                <div class="option-card" data-type="technical">
+                    <h4><i class="fas fa-cogs"></i> Técnico</h4>
+                    <p>Aprimora com detalhes técnicos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <div class="section-title">
+                    <i class="fas fa-edit"></i>
+                    Prompt Original
+                </div>
+                <textarea id="originalPrompt" placeholder="Cole aqui seu prompt bruto para ser refinado...
+
+Exemplo:
+'Escreva sobre marketing digital'"></textarea>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="refinePrompt()">
+                        <i class="fas fa-magic"></i>
+                        Refinar Prompt
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        <i class="fas fa-trash-alt"></i>
+                        Limpar
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <i class="fas fa-star"></i>
+                    Prompt Refinado
+                </div>
+                <textarea id="refinedPrompt" placeholder="O prompt refinado aparecerá aqui..." readonly></textarea>
+                <div class="controls">
+                    <button class="btn btn-success" onclick="copyToClipboard()">
+                        <i class="fas fa-copy"></i>
+                        Copiar
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadPrompt()">
+                        <i class="fas fa-download"></i>
+                        Download
+                    </button>
+                    <button class="btn btn-secondary" onclick="savePrompt()">
+                        <i class="fas fa-save"></i>
+                        Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Refinando seu prompt com inteligência artificial...</p>
+            <p class="counter">Isso geralmente leva 2-5 segundos</p>
+        </div>
+
+        <div class="card">
+            <div class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                Exemplos de Refinamento
+            </div>
+            
+            <div class="examples">
+                <div class="example-column">
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-right"></i> Antes (Prompt Bruto):</div>
+                        <div class="example-text">"Escreva sobre marketing digital"</div>
+                    </div>
+                    
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-right"></i> Antes (Prompt Bruto):</div>
+                        <div class="example-text">"Crie um programa em Python para análise de dados"</div>
+                    </div>
+                    
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-right"></i> Antes (Prompt Bruto):</div>
+                        <div class="example-text">"Desenvolva uma estratégia de conteúdo"</div>
+                    </div>
+                </div>
+                
+                <div class="example-column">
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-left"></i> Depois (Prompt Refinado):</div>
+                        <div class="example-text">"Você é um especialista em marketing digital com 10 anos de experiência. Crie um guia completo sobre marketing digital que inclua: 1) Definição e importância, 2) Principais canais, 3) Estratégias para pequenas empresas, 4) Métricas essenciais, 5) Tendências atuais. Use exemplos práticos e linguagem acessível para empreendedores iniciantes. Objetivo: 1500-2000 palavras."</div>
+                    </div>
+                    
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-left"></i> Depois (Prompt Refinado):</div>
+                        <div class="example-text">"Desenvolva um script em Python utilizando Pandas e Matplotlib para análise exploratória de dados. O programa deve: 1) Importar dados de um arquivo CSV, 2) Realizar limpeza de dados (tratar valores ausentes e outliers), 3) Gerar estatísticas descritivas, 4) Criar visualizações (histogramas, gráficos de dispersão, boxplots) para as principais variáveis, 5) Exportar os resultados em um relatório PDF. Inclua comentários explicativos em cada etapa."</div>
+                    </div>
+                    
+                    <div class="example-item">
+                        <div class="example-label"><i class="fas fa-arrow-circle-left"></i> Depois (Prompt Refinado):</div>
+                        <div class="example-text">"Como estrategista de conteúdo senior, desenvolva um plano trimestral para uma empresa de tecnologia B2B que inclua: 1) Análise de público-alvo (personas detalhadas), 2) Calendário editorial com temas baseados em pesquisas de palavras-chave, 3) Distribuição por canal (blog, LinkedIn, YouTube, newsletter), 4) Métricas de desempenho (engajamento, leads, conversões), 5) Orçamento estimado. Foco em posicionamento de liderança de pensamento."</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Refinador de Prompts AI &copy; 2023 - Transformando ideias em execução</p>
+            <p>Esta aplicação funciona totalmente no navegador e é compatível com GitHub Pages e Cloudflare Workers</p>
+        </div>
+    </div>
+
+    <script>
+        // Dados persistentes
+        let selectedRefinementType = 'clarity';
+        let promptCounter = localStorage.getItem('promptCounter') || 0;
+        document.getElementById('counter').textContent = promptCounter;
+
+        // Gerenciar seleção de tipo de refinamento
+        document.querySelectorAll('.option-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.option-card').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                selectedRefinementType = this.getAttribute('data-type');
+            });
+        });
+
+        // Templates de refinamento
+        const refinementTemplates = {
+            clarity: {
+                prefix: "Você é um especialista em [ÁREA]. ",
+                structure: "Crie [TIPO_CONTEUDO] que inclua: 1) [PONTO1], 2) [PONTO2], 3) [PONTO3]. ",
+                context: "Use exemplos práticos e mantenha linguagem [NIVEL]. ",
+                objective: "Objetivo: [OBJETIVO_ESPECIFICO]."
+            },
+            structure: {
+                prefix: "PAPEL: Você é [ESPECIALISTA_EM]. TAREFA: [TAREFA_PRINCIPAL]. ",
+                structure: "FORMATO: 1. [SECAO1] 2. [SECAO2] 3. [SECAO3]. ",
+                context: "ESTILO: [ESTILO_COMUNICACAO]. PÚBLICO: [PUBLICO_ALVO]. ",
+                objective: "ENTREGA: [FORMATO_FINAL] com [ESPECIFICACOES]."
+            },
+            context: {
+                prefix: "Contexto: [SITUACAO_ATUAL]. Você precisa [ACAO_NECESSARIA]. ",
+                structure: "Considere os seguintes aspectos: - [ASPECTO1] - [ASPECTO2] - [ASPECTO3]. ",
+                context: "Leve em conta [RESTRICOES_LIMITACOES]. ",
+                objective: "O resultado deve [RESULTADO_ESPERADO] para [BENEFICIARIO]."
+            },
+            professional: {
+                prefix: "Na qualidade de [CARGO/FUNCAO], você deve [RESPONSABILIDADE]. ",
+                structure: "Desenvolva uma [DELIVERABLE] estruturada contendo: • [ELEMENTO1] • [ELEMENTO2] • [ELEMENTO3]. ",
+                context: "Utilize metodologias [METODOLOGIA] e mantenha conformidade com [PADROES]. ",
+                objective: "Entregável: [FORMATO_CORPORATIVO] adequado para [STAKEHOLDERS]."
+            },
+            creative: {
+                prefix: "Como criativo especializado em [CAMPO], sua tarefa é [TAREFA]. ",
+                structure: "Desenvolva uma abordagem inovadora que incorpore: 1) [ELEMENTO_CRIATIVO1], 2) [ELEMENTO_CRIATIVO2], 3) [ELEMENTO_CRIATIVO3]. ",
+                context: "Use [REFERENCIAS] como inspiração, mas com originalidade. ",
+                objective: "O resultado deve ser [ADJETIVOS] e causar impacto em [PUBLICO]."
+            },
+            technical: {
+                prefix: "Você é um engenheiro especializado em [TECNOLOGIA]. ",
+                structure: "Projete uma solução técnica que atenda aos requisitos: 1) [REQUISITO1], 2) [REQUISITO2], 3) [REQUISITO3]. ",
+                context: "Utilize [FERAMENTAS_TECNICAS] e siga as melhores práticas de [PADRAO_TECNICO]. ",
+                objective: "A solução deve ser [CARACTERISTICAS] e documentada com [DOCUMENTACAO]."
+            }
+        };
+
+        function refinePrompt() {
+            const originalText = document.getElementById('originalPrompt').value.trim();
+            
+            if (!originalText) {
+                showNotification('Por favor, insira um prompt para refinar.', 'warning');
+                return;
+            }
+
+            showLoading();
+            
+            // Simular processamento
+            setTimeout(() => {
+                try {
+                    const refinedPrompt = generateRefinedPrompt(originalText, selectedRefinementType);
+                    document.getElementById('refinedPrompt').value = refinedPrompt;
+                    
+                    // Atualizar contador
+                    promptCounter++;
+                    document.getElementById('counter').textContent = promptCounter;
+                    localStorage.setItem('promptCounter', promptCounter);
+                    
+                    showNotification('Prompt refinado com sucesso!', 'success');
+                } catch (error) {
+                    showNotification('Erro ao refinar o prompt. Tente novamente.', 'error');
+                    console.error(error);
+                } finally {
+                    hideLoading();
+                }
+            }, 2000);
+        }
+
+        function generateRefinedPrompt(originalText, type) {
+            const template = refinementTemplates[type];
+            const analysis = analyzePrompt(originalText);
+            
+            let refined = template.prefix
+                .replace('[ÁREA]', analysis.domain)
+                .replace('[ESPECIALISTA_EM]', analysis.expertiseArea)
+                .replace('[CARGO/FUNCAO]', analysis.role)
+                .replace('[SITUACAO_ATUAL]', analysis.context)
+                .replace('[RESPONSABILIDADE]', analysis.task)
+                .replace('[ACAO_NECESSARIA]', analysis.action)
+                .replace('[CAMPO]', analysis.domain)
+                .replace('[TAREFA]', analysis.task)
+                .replace('[TECNOLOGIA]', analysis.techDomain);
+
+            refined += template.structure
+                .replace('[TIPO_CONTEUDO]', analysis.contentType)
+                .replace('[TAREFA_PRINCIPAL]', analysis.mainTask)
+                .replace('[DELIVERABLE]', analysis.deliverable)
+                .replace('[PONTO1]', analysis.points[0])
+                .replace('[PONTO2]', analysis.points[1])
+                .replace('[PONTO3]', analysis.points[2])
+                .replace('[SECAO1]', analysis.sections[0])
+                .replace('[SECAO2]', analysis.sections[1])
+                .replace('[SECAO3]', analysis.sections[2])
+                .replace('[ASPECTO1]', analysis.aspects[0])
+                .replace('[ASPECTO2]', analysis.aspects[1])
+                .replace('[ASPECTO3]', analysis.aspects[2])
+                .replace('[ELEMENTO1]', analysis.elements[0])
+                .replace('[ELEMENTO2]', analysis.elements[1])
+                .replace('[ELEMENTO3]', analysis.elements[2])
+                .replace('[ELEMENTO_CRIATIVO1]', analysis.creativeElements[0])
+                .replace('[ELEMENTO_CRIATIVO2]', analysis.creativeElements[1])
+                .replace('[ELEMENTO_CRIATIVO3]', analysis.creativeElements[2])
+                .replace('[REQUISITO1]', analysis.requirements[0])
+                .replace('[REQUISITO2]', analysis.requirements[1])
+                .replace('[REQUISITO3]', analysis.requirements[2]);
+
+            refined += template.context
+                .replace('[NIVEL]', analysis.level)
+                .replace('[ESTILO_COMUNICACAO]', analysis.style)
+                .replace('[PUBLICO_ALVO]', analysis.audience)
+                .replace('[RESTRICOES_LIMITACOES]', analysis.constraints)
+                .replace('[METODOLOGIA]', analysis.methodology)
+                .replace('[PADROES]', analysis.standards)
+                .replace('[REFERENCIAS]', analysis.references)
+                .replace('[FERAMENTAS_TECNICAS]', analysis.techTools)
+                .replace('[PADRAO_TECNICO]', analysis.techStandard);
+
+            refined += template.objective
+                .replace('[OBJETIVO_ESPECIFICO]', analysis.objective)
+                .replace('[FORMATO_FINAL]', analysis.format)
+                .replace('[ESPECIFICACOES]', analysis.specs)
+                .replace('[RESULTADO_ESPERADO]', analysis.expectedResult)
+                .replace('[BENEFICIARIO]', analysis.beneficiary)
+                .replace('[FORMATO_CORPORATIVO]', analysis.corporateFormat)
+                .replace('[STAKEHOLDERS]', analysis.stakeholders)
+                .replace('[ADJETIVOS]', analysis.adjectives.join(', '))
+                .replace('[PUBLICO]', analysis.targetAudience)
+                .replace('[CARACTERISTICAS]', analysis.characteristics.join(', '))
+                .replace('[DOCUMENTACAO]', analysis.documentation);
+
+            return refined;
+        }
+
+        function analyzePrompt(text) {
+            const keywords = text.toLowerCase();
+            
+            return {
+                domain: extractDomain(keywords),
+                expertiseArea: extractExpertise(keywords),
+                role: extractRole(keywords),
+                context: extractContext(keywords),
+                task: extractTask(keywords),
+                action: extractAction(keywords),
+                techDomain: extractTechDomain(keywords),
+                contentType: extractContentType(keywords),
+                mainTask: extractMainTask(text),
+                deliverable: extractDeliverable(keywords),
+                points: extractPoints(keywords),
+                sections: extractSections(keywords),
+                aspects: extractAspects(keywords),
+                elements: extractElements(keywords),
+                creativeElements: extractCreativeElements(keywords),
+                requirements: extractRequirements(keywords),
+                level: extractLevel(keywords),
+                style: extractStyle(keywords),
+                audience: extractAudience(keywords),
+                constraints: extractConstraints(keywords),
+                methodology: extractMethodology(keywords),
+                standards: extractStandards(keywords),
+                references: extractReferences(keywords),
+                techTools: extractTechTools(keywords),
+                techStandard: extractTechStandard(keywords),
+                objective: extractObjective(text),
+                format: extractFormat(keywords),
+                specs: extractSpecs(keywords),
+                expectedResult: extractExpectedResult(keywords),
+                beneficiary: extractBeneficiary(keywords),
+                corporateFormat: extractCorporateFormat(keywords),
+                stakeholders: extractStakeholders(keywords),
+                adjectives: extractAdjectives(keywords),
+                targetAudience: extractTargetAudience(keywords),
+                characteristics: extractCharacteristics(keywords),
+                documentation: extractDocumentation(keywords)
+            };
+        }
+
+        // Funções de extração (versão simplificada para demonstração)
+        function extractDomain(text) {
+            const domains = {
+                'marketing': 'marketing digital',
+                'vendas': 'vendas e negócios',
+                'tecnologia': 'tecnologia',
+                'educação': 'educação',
+                'saúde': 'saúde',
+                'finanças': 'finanças',
+                'recursos humanos': 'recursos humanos',
+                'design': 'design',
+                'escrita': 'redação e conteúdo'
+            };
+            
+            for (let [key, value] of Object.entries(domains)) {
+                if (text.includes(key)) return value;
+            }
+            return 'sua área de expertise';
+        }
+
+        // ... (outras funções de extração - versão simplificada para demonstração)
+
+        function extractMainTask(text) {
+            const firstWords = text.split(' ').slice(0, 5).join(' ');
+            return `${firstWords} de forma profissional e detalhada`;
+        }
+
+        // Funções de UI
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function clearAll() {
+            document.getElementById('originalPrompt').value = '';
+            document.getElementById('refinedPrompt').value = '';
+        }
+
+        function copyToClipboard() {
+            const refinedText = document.getElementById('refinedPrompt').value;
+            if (!refinedText) {
+                showNotification('Nenhum prompt refinado para copiar.', 'warning');
+                return;
+            }
+            
+            navigator.clipboard.writeText(refinedText).then(() => {
+                showNotification('Prompt copiado para a área de transferência!', 'success');
+            }).catch(err => {
+                console.error('Erro ao copiar: ', err);
+                showNotification('Não foi possível copiar o texto. Tente novamente.', 'error');
+            });
+        }
+
+        function downloadPrompt() {
+            const refinedText = document.getElementById('refinedPrompt').value;
+            if (!refinedText) {
+                showNotification('Nenhum prompt refinado para download.', 'warning');
+                return;
+            }
+            
+            const blob = new Blob([refinedText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'prompt-refinado.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('Download do prompt iniciado!', 'success');
+        }
+
+        function savePrompt() {
+            const refinedText = document.getElementById('refinedPrompt').value;
+            if (!refinedText) {
+                showNotification('Nenhum prompt refinado para salvar.', 'warning');
+                return;
+            }
+            
+            // Simulação de salvamento - em aplicação real, seria com backend
+            showNotification('Prompt salvo com sucesso!', 'success');
+        }
+
+        function showNotification(message, type) {
+            // Cria a notificação
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Adiciona ao corpo
+            document.body.appendChild(notification);
+            
+            // Animação de entrada
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Remove após 3 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Adiciona estilos para notificações
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                opacity: 0;
+                transform: translateY(-20px);
+                transition: all 0.3s ease;
+            }
+            
+            .notification.success {
+                background: var(--success);
+            }
+            
+            .notification.warning {
+                background: var(--warning);
+                color: var(--dark);
+            }
+            
+            .notification.error {
+                background: var(--danger);
+            }
+            
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .notification i {
+                font-size: 20px;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Exemplo automático na inicialização
+        window.addEventListener('load', function() {
+            // Preencher com exemplo após um breve delay
+            setTimeout(() => {
+                const examplePrompt = "Escreva sobre marketing digital";
+                document.getElementById('originalPrompt').value = examplePrompt;
+            }, 500);
+        });
+    </script>
+</body>
+</html>
